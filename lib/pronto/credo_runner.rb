@@ -1,3 +1,4 @@
+require 'open3'
 require 'pronto'
 require 'pronto/credo/wrapper'
 
@@ -8,7 +9,9 @@ module Pronto
     end
 
     def run
-      return [] unless @patches
+      return [] unless @patch
+
+      compile
 
       @patches.select { |p| p.additions > 0 }
         .select { |p| elixir_file?(p.new_file_full_path) }
@@ -18,6 +21,10 @@ module Pronto
     end
 
     private
+
+    def compile
+      Open3.capture3("mix compile --force")
+    end
 
     def inspect(patch)
       offences = Credo::Wrapper.new(patch).lint
